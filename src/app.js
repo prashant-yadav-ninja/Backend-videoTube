@@ -22,6 +22,7 @@ app.use(cookieParser());
 
 //routes import
 import userRouter from "./routes/user.routes.js";
+import errorHandler from "./middlewares/errroHandler.middleware.js";
 
 //routes declartion
 app.use("/api/v1/users", userRouter);
@@ -38,5 +39,7 @@ app.get("/clear-cookies", (req, res) => {
 
 //   res.status(err.status).json(new ApiError(err.status, err.message));
 // });
+
+app.use(errorHandler);
 
 export { app };
