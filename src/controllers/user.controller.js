@@ -97,73 +97,114 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "Avatar is Required");
   }
 
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+  let avatar, coverImage;
+  try {
+    // Upload avatar and cover image to Cloudinary
+    avatar = await uploadOnCloudinary(avatarLocalPath);
+    coverImage = coverImageLocalPath
+      ? await uploadOnCloudinary(coverImageLocalPath)
+      : null;
 
-  if (!avatar) {
-    throw new ApiError(500, "Something Went Wrong While Uploading Avatar");
+    if (!avatar) {
+      throw new Error("Avatar upload failed");
+    }
+
+    // Create new user in the database
+    const createdUser = await User.create({
+      
+      username: username.toLowerCase(),
+      password,
+      fullName,
+      avatar: avatar.url,
+      coverImage: coverImage?.url || "",
+    });
+
+    const userObj = createdUser.toObject();
+    delete userObj.password;
+    delete userObj.refreshToken;
+
+    return res
+      .status(201)
+      .json(new ApiResponse(200, userObj, "User registered successfully"));
+  } catch (error) {
+    // Cleanup: remove any uploaded files if any part of the process fails
+    if (avatar) {
+      await deleteFromCloudinary(avatar.public_id);
+    }
+    if (coverImage) {
+      await deleteFromCloudinary(coverImage.public_id);
+    }
+    console.log(error)
+    throw new ApiError(500, error.message);
   }
 
-  // console.log(avatar)
+  // const avatar = await uploadOnCloudinary(avatarLocalPath);
+  // const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  const createdUser = await User.create({
-    email,
-    username: username.toLowerCase(),
-    password,
-    fullName,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "",
-  });
-
-  const userObj = createdUser.toObject();
-
-  // delete createdUser.password
-  // delete createdUser.refreshToken
-
-  delete userObj.password;
-  delete userObj.refreshToken;
-
-  // const {password as newpassword ,refreshToken,...UserCreate} = createdUser
-
-  // createdUser.select(
-  //   "-password -refreshToken"
-  // )
-
-  // console.log(createdUser,' this is createdUser')
-  // console.log(userObj,' this is userObj')
-
-  // {
-  //   avatar: [
-  //     {
-  //       fieldname: 'avatar',
-  //       originalname: 'dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
-  //       encoding: '7bit',
-  //       mimetype: 'image/jpeg',
-  //       destination: './public/temp',
-  //       filename: 'dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
-  //       path: 'public\\temp\\dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
-  //       size: 253609
-  //     }
-  //   ],
-  //   coverImage: [
-  //     {
-  //       fieldname: 'coverImage',
-  //       originalname: 'WIN_20221211_15_48_36_Pro.jpg',
-  //       encoding: '7bit',
-  //       mimetype: 'image/jpeg',
-  //       destination: './public/temp',
-  //       filename: 'WIN_20221211_15_48_36_Pro.jpg',
-  //       path: 'public\\temp\\WIN_20221211_15_48_36_Pro.jpg',
-  //       size: 133911
-  //     }
-  //   ]
+  // if (!avatar) {
+  //   throw new ApiError(500, "Something Went Wrong While Uploading Avatar");
   // }
 
-  // validation for email pending
+  // // console.log(avatar)
 
-  return res
-    .status(201)
-    .json(new ApiResponse(200, userObj, "User Register Successfully"));
+  // const createdUser = await User.create({
+  //   email,
+  //   username: username.toLowerCase(),
+  //   password,
+  //   fullName,
+  //   avatar: avatar.url,
+  //   coverImage: coverImage?.url || "",
+  // });
+
+  // const userObj = createdUser.toObject();
+
+  // // delete createdUser.password
+  // // delete createdUser.refreshToken
+
+  // delete userObj.password;
+  // delete userObj.refreshToken;
+
+  // // const {password as newpassword ,refreshToken,...UserCreate} = createdUser
+
+  // // createdUser.select(
+  // //   "-password -refreshToken"
+  // // )
+
+  // // console.log(createdUser,' this is createdUser')
+  // // console.log(userObj,' this is userObj')
+
+  // // {
+  // //   avatar: [
+  // //     {
+  // //       fieldname: 'avatar',
+  // //       originalname: 'dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
+  // //       encoding: '7bit',
+  // //       mimetype: 'image/jpeg',
+  // //       destination: './public/temp',
+  // //       filename: 'dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
+  // //       path: 'public\\temp\\dragon-ball-z-son-goku-portrait-display-wallpaper-preview.jpg',
+  // //       size: 253609
+  // //     }
+  // //   ],
+  // //   coverImage: [
+  // //     {
+  // //       fieldname: 'coverImage',
+  // //       originalname: 'WIN_20221211_15_48_36_Pro.jpg',
+  // //       encoding: '7bit',
+  // //       mimetype: 'image/jpeg',
+  // //       destination: './public/temp',
+  // //       filename: 'WIN_20221211_15_48_36_Pro.jpg',
+  // //       path: 'public\\temp\\WIN_20221211_15_48_36_Pro.jpg',
+  // //       size: 133911
+  // //     }
+  // //   ]
+  // // }
+
+  // // validation for email pending
+
+  // return res
+  //   .status(201)
+  //   .json(new ApiResponse(200, userObj, "User Register Successfully"));
 
   // const response = new ApiResponse(200, { username, email }, "User registered successfully");
 
