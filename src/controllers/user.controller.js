@@ -292,7 +292,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   const user = await User.findById(decodedToken._id);
 
   if (!user) {
-    throw new ApiError(401, "Invalid Refresh Token");
+    throw new ApiError(401, "Invalid To Access ");
   }
 
   if (incomingrefreshToken !== user.refreshToken) {
@@ -402,7 +402,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .cookie("id", user._id)
+    .cookie("id", user._id, { httpOnly: true, secure: true })
     .json(new ApiResponse(200, {}, "OTP Sent"));
 });
 
