@@ -111,7 +111,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
     // Create new user in the database
     const createdUser = await User.create({
-      
       username: username.toLowerCase(),
       password,
       fullName,
@@ -134,7 +133,7 @@ const registerUser = asyncHandler(async (req, res) => {
     if (coverImage) {
       await deleteFromCloudinary(coverImage.public_id);
     }
-    console.log(error)
+    // console.log(error);
     throw new ApiError(500, error.message);
   }
 
