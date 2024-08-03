@@ -4,7 +4,7 @@ const tweetSchema = new mongoose.Schema(
   {
     content: {
       type: String,
-      required: true,
+      // required: true,
     },
     owner: {
       type: mongoose.Schema.Types.ObjectId,

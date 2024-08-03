@@ -23,7 +23,7 @@ router.route("/upload").post(
 
 router.route("/getVideoById/:videoId").get(getVideoById);
 
-router.route('/getAllvideos').get(getAllvideos)
+router.route("/getAllvideos").get(getAllvideos);
 
 router
   .route("/update/:videoId")
@@ -33,7 +33,7 @@ router
     updateVideo
   );
 
-router.route('/delete/:videoId').post(verifyJWT,deleteVideo)
-router.route('/published/:videoId').patch(verifyJWT,togglePublishStatus)
+router.route("/delete/:videoId").post(verifyJWT, deleteVideo);
+router.route("/published/:videoId").patch(verifyJWT, togglePublishStatus);
 
 export default router;

@@ -71,19 +71,26 @@ const publishAvideo = asyncHandler(async (req, res) => {
 });
 
 const getVideoById = asyncHandler(async (req, res) => {
+
+  // here i make functionality that when the user if login try to see the video then in watchHistory video is added
+
   const { videoId } = req.params;
 
-  console.log(videoId, "coming from params");
+  if(!videoId){
+    throw new ApiError(400,'Please refresh the page not getting videoId')
+  }
 
-  const video = await Video.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(videoId),
-      },
-    },
-  ]);
+  // console.log(videoId, "coming from params");
+
+  const video = await Video.findById(videoId)
+
+  if(!video){
+    throw new ApiError(404,'video not found')
+  }
 
   const refreshToken = req.cookies?.refreshToken;
+
+  console.log(refreshToken,'this is refresh Token')
 
   if (refreshToken) {
     const user = await User.findOne({ refreshToken });
@@ -92,18 +99,20 @@ const getVideoById = asyncHandler(async (req, res) => {
       throw new ApiError(404, "Unauthorized to access or Invalid Credential");
     }
 
-    const videoObjectid = new mongoose.Types.ObjectId(videoId);
+    // const videoObjectid = new mongoose.Types.ObjectId(videoId);
 
-    user.watchHistory.push(videoObjectid);
+    // user.watchHistory.push({video:videoObjectid});
 
-    user.save();
+    await user.addVideoandUpdateWatchHistory(videoId)
+
+    await user.save();
   }
 
   console.log(video);
 
   return res
     .status(200)
-    .json(new ApiResponse(200, video[0], "video get successfully"));
+    .json(new ApiResponse(200, video, "video get successfully"));
 });
 
 const getAllvideos = asyncHandler(async (req, res) => {
