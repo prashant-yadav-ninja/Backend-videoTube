@@ -15,6 +15,14 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Video",
     },
+    tweet: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Tweet",
+    },
+    parentComment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
   },
   { timestamps: true }
 );
